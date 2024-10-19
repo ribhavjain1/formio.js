@@ -1116,7 +1116,7 @@ export default class Webform extends NestedDataComponent {
         this.currentForm = this;
         this.hook("attachWebform", element, this);
         return childPromise.then(() => {
-            this.emit("render", this.element);
+            this.emit("render", this.element, this);
 
             return this.setValue(this._submission, {
                 noUpdateEvent: true,
