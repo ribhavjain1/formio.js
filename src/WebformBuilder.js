@@ -374,7 +374,6 @@ export default class WebformBuilder extends Component {
       editJson: 'single'
     });
 
-    var me = this;
     this.emit("attachEventToComponent", element, component, this);
 
     if (component.refs.copyComponent) {
