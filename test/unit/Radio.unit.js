@@ -322,9 +322,28 @@ describe('Radio Component', () => {
       done();
     }).catch(done);
   });
-});
 
-describe('Radio Component', () => {
+  it('Should not show infinite loader for radio with URL data source if options loading failed', (done) => {
+    const form = _.cloneDeep(comp9);
+    const element = document.createElement('div');
+    const originalMakeRequest = Formio.makeRequest;
+
+    Formio.makeRequest = function() {
+      return new Promise((res, rej) => {
+        setTimeout(() => rej('loading error'), 200);
+      });
+    };
+    Formio.createForm(element, form).then(form => {
+      const radio = form.getComponent('radio');
+      assert.equal(!!radio.element.querySelector('.loader'), true, 'Should show loader.')
+      setTimeout(()=>{
+        assert.equal(!!radio.element.querySelector('.loader'), false, 'Should not show loader.')
+        Formio.makeRequest = originalMakeRequest;
+        done();
+      }, 350);
+    }).catch(done);
+  });
+
   it('should have red asterisk left hand side to the options labels if component is required and label is hidden', () => {
     return Harness.testCreate(RadioComponent, comp7).then(component => {
       const options = component.element.querySelectorAll('.form-check-label');

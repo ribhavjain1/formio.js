@@ -365,12 +365,13 @@ export default class RadioComponent extends ListComponent {
     .then((response) => {
       this.loading = false;
       this.setItems(response);
-      this.optionsLoaded = true;
-      this.redraw();
     })
     .catch((err) => {
-      this.optionsLoaded = true;
       this.handleLoadingError(err);
+    })
+    .finally(() => {
+      this.optionsLoaded = true;
+      this.redraw();
     });
   }
 
@@ -397,10 +398,9 @@ export default class RadioComponent extends ListComponent {
       };
       listData.push(this.templateData[this.component.valueProperty ? valueAtProperty : i]);
 
-      if ((this.component.valueProperty || !this.isRadio) && (
-        _.isUndefined(valueAtProperty) ||
-        (!this.isRadio && _.isObject(valueAtProperty)) ||
-        (!this.isRadio && _.isBoolean(valueAtProperty))
+      const value = this.loadedOptions[i].value;
+      if (!this.isRadio && (
+        _.isObject(value) || _.isBoolean(value) || _.isUndefined(value)
       )) {
         this.loadedOptions[i].invalid = true;
       }
@@ -426,7 +426,7 @@ export default class RadioComponent extends ListComponent {
       const value = this.dataValue;
       this.refs.wrapper.forEach((wrapper, index) => {
         const input = this.refs.input[index];
-        const checked  = (input.type === 'checkbox') ? value[input.value] || input.checked : (input.value.toString() === value.toString());
+        const checked  = (value === undefined || value === null) ? false : (input.type === 'checkbox') ? value[input.value] || input.checked : (input.value.toString() === value.toString());
         if (checked) {
           //add class to container when selected
           this.addClass(wrapper, this.optionSelectedClass);
