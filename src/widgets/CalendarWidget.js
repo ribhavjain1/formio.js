@@ -195,7 +195,14 @@ export default class CalendarWidget extends InputWidget {
                   `flatpickr-${locale}`,
                   `flatpickr-${locale}`,
                   `${Formio.cdn['flatpickr-formio']}/l10n/flatpickr-${locale}.js`,
-                  true).then(() => this.initFlatpickr(Flatpickr));
+                  true)
+                  .catch(() => {
+                    // fallback to en if locale fails to load
+                    this.settings.locale = 'en';
+                  })
+                  .finally(() => {
+                    this.initFlatpickr(Flatpickr);
+                  })
               }
               else {
                 this.initFlatpickr(Flatpickr);
@@ -439,6 +446,18 @@ export default class CalendarWidget extends InputWidget {
         this.settings.wasDefaultValueChanged = false;
       }
     });
+    
+    // Move input attributes to altInput.
+    const labelledbyIds = this.calendar.input.getAttribute('aria-labelledby');
+    const isRequired = this.calendar.input.getAttribute('aria-required');
+
+    this.calendar.altInput.id = this._input.id;
+    this.calendar.altInput.setAttribute('aria-labelledby', labelledbyIds);
+    this.calendar.altInput.setAttribute('aria-required', isRequired);
+
+    this._input.removeAttribute('id');
+    this._input.removeAttribute('aria-labelledby');
+    this._input.removeAttribute('aria-required');
 
     const excludedFromMaskFormats = ['MMMM'];
 
@@ -499,11 +518,12 @@ export default class CalendarWidget extends InputWidget {
 
     // If other fields are used to calculate disabled dates, we need to redraw calendar to refresh disabled dates
     if (this.settings.disableFunction && this.componentInstance && this.componentInstance.root) {
-      this.componentInstance.root.on('change', (e) => {
+      this.changeHandler = (e) => {
         if (e.changed && this.calendar) {
           this.calendar.redraw();
         }
-      });
+      };
+      this.componentInstance.root.on('change', this.changeHandler);
     }
 
     // Restore the calendar value from the component value.
@@ -554,6 +574,10 @@ export default class CalendarWidget extends InputWidget {
   destroy(all = false) {
     if (this.calendar) {
       this.calendar.destroy();
+    }
+    if (this.changeHandler) {
+      this.componentInstance.root.off('change', this.changeHandler);
+      this.changeHandler = null;
     }
     super.destroy(all);
   }
