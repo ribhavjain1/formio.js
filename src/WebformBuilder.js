@@ -391,6 +391,9 @@ export default class WebformBuilder extends Component {
       editJson: 'single'
     });
 
+    var me = this;
+    this.emit("attachEventToComponent", element, component, this);
+
     if (component.refs.copyComponent) {
       this.attachTooltip(component.refs.copyComponent, this.t('Copy'));
 
@@ -1053,7 +1056,8 @@ export default class WebformBuilder extends Component {
     }
 
     return rebuild.then(() => {
-      this.emit('addComponent', info, parent, path, index, isNew && !this.options.noNewEdit && !info.noNewEdit);
+      this.emit('preAddComponent', info, this);
+      this.emit('addComponent', info, parent, path, index, isNew && !this.options.noNewEdit && !info.noNewEdit, this);
       if (!isNew || this.options.noNewEdit || info.noNewEdit) {
         this.emit('change', this.form);
       }
@@ -1178,7 +1182,7 @@ export default class WebformBuilder extends Component {
       }
       const rebuild = parent.formioComponent.rebuild() || Promise.resolve();
       rebuild.then(() => {
-        this.emit('removeComponent', component, parent.formioComponent.schema, path, index);
+        this.emit('removeComponent', component, parent.formioComponent.schema, path, index, this);
         this.emit('change', this.form);
       });
     }
@@ -1627,7 +1631,7 @@ export default class WebformBuilder extends Component {
       helplinks: this.helplinks
     }));
 
-    this.dialog = this.createModal(this.componentEdit, _.get(this.options, 'dialogAttr', {}));
+    // this.dialog = this.createModal(this.componentEdit, _.get(this.options, 'dialogAttr', {}));
 
     // This is the attach step.
     this.editForm.attach(this.componentEdit.querySelector(`[${this._referenceAttributeName}="editForm"]`));

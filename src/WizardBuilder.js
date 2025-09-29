@@ -238,6 +238,7 @@ export default class WizardBuilder extends WebformBuilder {
       newPage
     );
 
+    this.emit('pageAdded', this._form, this, newPage);
     this.emit('change', this._form);
     return this.rebuild();
   }
@@ -287,6 +288,7 @@ export default class WizardBuilder extends WebformBuilder {
   }
 
   setPage(index) {
+    this.emit('showPageDataToRightPanel', this, index);
     if (index === this.page) {
       return;
     }
